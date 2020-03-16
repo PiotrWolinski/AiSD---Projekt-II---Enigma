@@ -102,8 +102,10 @@ void tasks(Machine& machine)
 
 		t.msg = (unsigned int*)malloc(t.msg_size * sizeof(unsigned int)); //robie miejsce na dwie cyfry
 		unsigned int x = 0;
-		while (std::cin >> t.msg[x] )
+		int tmp = 0;
+		while (std::cin >> t.msg[x])
 		{
+			tmp = t.msg[x];
 			if (t.msg[x] == 0)
 			{
 				break;
@@ -112,17 +114,26 @@ void tasks(Machine& machine)
 			{
 				x++;
 			}
-
 			if (x == t.msg_size)
 			{
-				t.msg_size++;
-				(unsigned int*)realloc(t.msg, t.msg_size * sizeof(unsigned int));
+				t.msg_size+=2;
+				t.msg = (unsigned int*)realloc(t.msg, t.msg_size * sizeof(unsigned int));
 			}
 		}
 
 
 	}
-
+	for (int y = 0; y < t.msg_size; y++)
+	{
+		if (t.msg[y])
+		{
+			printf("%u", t.msg[y]);
+		}
+		else
+		{
+			break;
+		}
+	}
 	free(t.msg);
 }
 
