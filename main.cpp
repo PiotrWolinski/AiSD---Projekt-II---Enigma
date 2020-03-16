@@ -26,18 +26,24 @@ struct Machine {
 };
 
 struct Task {
-	unsigned int p = 0;
+	unsigned int p = 0;				//liczba zadan do rozwiazania
 	unsigned int ro_n = 0;			//liczba obcenie uzywanych rotorow
 	unsigned int* ro_id;			//tablica indeksow obecnie uzywanych rotorow
 	unsigned int* s_pos;			//tablica pozycji startowa rotora
 	unsigned int re_n = 0;			//indeks obecnie uzywanego reflektora
-	unsigned int msg_size = 2;
+	unsigned int msg_size = 2;		//rozmiar tablicy, ktora zawiera zdanie do zaszyfrowania
 	unsigned int* msg;				//tablica do przechowywania wiadomosci do zakodowania
 };
 
-void rotate_to_s_pos(Rotor& r, Machine m)
+//przesuwa KOPIE ROTORA na pozycje startowa okreslona w konfiguracji zadan
+unsigned int* rotate_to_s_pos(unsigned int n, unsigned int* perm, int s_pos)
 {
-
+	unsigned int* pom = (unsigned int*)malloc(n * sizeof(unsigned int));
+	for (int i = 0; i < n; i++)
+	{
+		pom[i] = perm[(i + s_pos - 1) % n];
+	}
+	return pom;
 }
 
 void machine_config(Machine& machine)
@@ -84,12 +90,43 @@ void machine_config(Machine& machine)
 	}
 }
 
+void generate_cipher(Task t, Machine machine)
+{
+	Rotor* rotors = (Rotor*)malloc(t.ro_n * sizeof(Rotor));
+	for (int x = 0; x < t.ro_n; x++)
+	{
+		rotors[x].perm = rotate_to_s_pos(machine.rotors[t.ro_id[x]].n, machine.rotors[t.ro_id[x]].perm, t.s_pos[x]);
+	}
+	
+	for (int i = 0; i < t.ro_n; i++)
+	{
+		for (int j = 0; j < machine.n; j++)
+		{
+
+			printf("%u ", rotors[i].perm[j]);
+
+		}
+
+	}
+
+	for (int i = 0; i < t.msg_size; i++)
+	{
+		/*t.msg[i] = */
+
+
+	}
+
+
+
+}
+
 void tasks(Machine& machine)
 {
 	Task t;
 	scanf("%u", &t.p);
 	for (int i = 0; i < t.p; i++)
 	{
+		t.msg_size = 1;
 		std::cin >> t.ro_n;
 		t.ro_id = (unsigned int*)malloc(t.ro_n * sizeof(unsigned int));
 		t.s_pos = (unsigned int*)malloc(t.ro_n * sizeof(unsigned int));
@@ -120,19 +157,8 @@ void tasks(Machine& machine)
 				t.msg = (unsigned int*)realloc(t.msg, t.msg_size * sizeof(unsigned int));
 			}
 		}
-
-
-	}
-	for (int y = 0; y < t.msg_size; y++)
-	{
-		if (t.msg[y])
-		{
-			printf("%u", t.msg[y]);
-		}
-		else
-		{
-			break;
-		}
+		t.msg_size = x;
+		generate_cipher(t, machine);
 	}
 	free(t.msg);
 }
@@ -140,25 +166,8 @@ void tasks(Machine& machine)
 int main()
 {
 	Machine machine;
-	//machine_config(machine);
+	machine_config(machine);
 	tasks(machine);
 
-	/*for (int i = 0; i < machine.m; i++)
-	{
-		for (int j = 0; j < machine.n; j++)
-		{
-			printf("%u ", machine.rotors[i].perm[j]);
-		}
-		printf("%u", machine.rotors[i].notch_n);
-		printf("\n");
-	}
-	for (int i = 0; i < machine.l; i++)
-	{
-		for (int j = 0; j < machine.n; j++)
-		{
-			printf("%u ", machine.reflectors[i].perm[j]);
-		}
-		printf("\n");
-	}*/
 	return 0;
 }
