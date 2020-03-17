@@ -76,7 +76,23 @@ unsigned int return_index(unsigned int input, Rotor r)
 	return index + 1;
 }
 
-//input - indeks liczby, ktora wchodzi do reflektora
+unsigned int return_index_r(unsigned int input, Rotor r)
+{							
+	input = (input + r.t_n) % r.n;
+	unsigned int index = 0;
+
+	for (int i = 0; i < r.n; i++)
+	{
+		if (input == r.perm[i]%r.n)
+		{
+			index = i;
+			break;
+		}
+	}
+	return index + 1;
+}
+
+//input - indeks liczby, ktora wchodzi do reflektora						POPRAWIE, ZEBY NIE BYLO PETLI
 //output - indeks, pod ktorym trzeba sprawdzic alfabet podstawowy kolejnego wirnika
 unsigned int return_index(unsigned int input, Reflector r)
 {
@@ -149,14 +165,6 @@ void generate_cipher(Task t, Machine machine)
 		rotors[x].t_n = t.s_pos[x] - 1;
 		rotors[x].n = machine.n;
 	}
-	
-	//for (int i = 0; i < t.ro_n; i++)
-	//{
-	//	for (int j = 0; j < machine.n; j++)
-	//	{
-	//		printf("%u ", rotors[i].perm[j]);
-	//	}
-	//}
 
 	//kodowanie wlasciwej wiadomosci
 	for (int i = 0; i < t.msg_size; i++)
@@ -170,14 +178,15 @@ void generate_cipher(Task t, Machine machine)
 				rotors[j].t_n++;
 			}
 			tmp = return_index(tmp, rotors[j]); 
-
 		}
 		tmp = return_index(tmp, machine.reflectors[t.re_n]);
-		printf("%u ", tmp);											//wypisywanie indeksu, ktory wychodzi z rotora
-
-
-
+		for (int j = t.ro_n - 1; j >= 0; j--)
+		{
+			tmp = return_index_r(tmp, rotors[j]);
+		}
+		printf("%u ", tmp);			
 	}
+	printf("\n");
 }
 
 void tasks(Machine& machine)
