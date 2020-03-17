@@ -9,7 +9,7 @@ struct Rotor {
 	unsigned int* perm;				 //tablica do przechowywania jego permutacji
 	unsigned int notch_n=0;			 //ilosc liter powodujacych obrot innych wirnikow
 	unsigned int* notch;			 //tablica do przechowywania tych liter
-	unsigned int s_pos = 1;			 //pozycja startowa
+	unsigned int t_n = 0;			 //liczba obrotow, ktore wykonal rotor od swojego pierwotnego polozenia
 };
 
 struct Reflector {
@@ -44,6 +44,55 @@ unsigned int* rotate_to_s_pos(unsigned int n, unsigned int* perm, int s_pos)
 		pom[i] = perm[(i + s_pos - 1) % n];
 	}
 	return pom;
+}
+
+unsigned int* rotate_before(unsigned int n, unsigned int* perm)
+{
+	unsigned int* pom = (unsigned int*)malloc(n * sizeof(unsigned int));
+	for (int i = 0; i < n; i++)
+	{
+		pom[i] = perm[(i + 1) % n];
+	}
+	return pom;
+}
+
+//zwraca indeks liczby, ktora trzeba sprawdzic w kolejnym rotorze lub reflektorze
+//input - indeks liczby, ktora sie sprawdza
+//output - indeks liczby, ktora bedzie sprawdzana w kolejnym rotorze/reflektorze
+unsigned int return_index(unsigned int input, Rotor r)
+{
+	input--;									//przez to bede mial tutaj taka liczbe, jakiego indeksu dokladnie szukam
+	unsigned int tmp = r.perm[input] - 1;		//zapisuje liczbe, ktorej odpowiadajacej liczby z a podst bede szukal
+	unsigned int index = 0;
+
+	for (int i = 0; i < r.n; i++)
+	{
+		if (tmp == (i + r.t_n) % r.n)
+		{
+			index = i;
+			break;
+		}
+	}
+	return index + 1;
+}
+
+//input - indeks liczby, ktora wchodzi do reflektora
+//output - indeks, pod ktorym trzeba sprawdzic alfabet podstawowy kolejnego wirnika
+unsigned int return_index(unsigned int input, Reflector r)
+{
+	input--;									//przez to bede mial tutaj taka liczbe, jakiego indeksu dokladnie szukam
+	unsigned int tmp = r.perm[input] - 1;		//zapisuje liczbe, ktorej odpowiadajacej liczby z a podst bede szukal
+	unsigned int index = 0;
+
+	for (int i = 0; i < r.n; i++)
+	{
+		if (tmp == i)
+		{
+			index = i;
+			break;
+		}
+	}
+	return index + 1;
 }
 
 void machine_config(Machine& machine)
@@ -93,31 +142,42 @@ void machine_config(Machine& machine)
 void generate_cipher(Task t, Machine machine)
 {
 	Rotor* rotors = (Rotor*)malloc(t.ro_n * sizeof(Rotor));
+	//przygotowanie rotorow - obracanie ich na pozycje startowe
 	for (int x = 0; x < t.ro_n; x++)
 	{
 		rotors[x].perm = rotate_to_s_pos(machine.rotors[t.ro_id[x]].n, machine.rotors[t.ro_id[x]].perm, t.s_pos[x]);
+		rotors[x].t_n = t.s_pos[x] - 1;
+		rotors[x].n = machine.n;
 	}
 	
-	for (int i = 0; i < t.ro_n; i++)
-	{
-		for (int j = 0; j < machine.n; j++)
-		{
+	//for (int i = 0; i < t.ro_n; i++)
+	//{
+	//	for (int j = 0; j < machine.n; j++)
+	//	{
+	//		printf("%u ", rotors[i].perm[j]);
+	//	}
+	//}
 
-			printf("%u ", rotors[i].perm[j]);
-
-		}
-
-	}
-
+	//kodowanie wlasciwej wiadomosci
 	for (int i = 0; i < t.msg_size; i++)
 	{
-		/*t.msg[i] = */
+		unsigned int tmp = t.msg[i];
+		for (int j = 0; j < t.ro_n; j++)
+		{
+			if (!j)
+			{
+				rotors[j].perm = rotate_before(rotors[j].n, rotors[j].perm);
+				rotors[j].t_n++;
+			}
+			tmp = return_index(tmp, rotors[j]); 
+
+		}
+		tmp = return_index(tmp, machine.reflectors[t.re_n]);
+		printf("%u ", tmp);											//wypisywanie indeksu, ktory wychodzi z rotora
+
 
 
 	}
-
-
-
 }
 
 void tasks(Machine& machine)
