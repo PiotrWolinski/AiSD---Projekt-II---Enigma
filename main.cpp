@@ -92,23 +92,11 @@ unsigned int return_index_r(unsigned int input, Rotor r)
 	return index + 1;
 }
 
-//input - indeks liczby, ktora wchodzi do reflektora						POPRAWIE, ZEBY NIE BYLO PETLI
+//input - indeks liczby, ktora wchodzi do reflektora						
 //output - indeks, pod ktorym trzeba sprawdzic alfabet podstawowy kolejnego wirnika
 unsigned int return_index(unsigned int input, Reflector r)
 {
-	input--;									//przez to bede mial tutaj taka liczbe, jakiego indeksu dokladnie szukam
-	unsigned int tmp = r.perm[input] - 1;		//zapisuje liczbe, ktorej odpowiadajacej liczby z a podst bede szukal
-	unsigned int index = 0;
-
-	for (int i = 0; i < r.n; i++)
-	{
-		if (tmp == i)
-		{
-			index = i;
-			break;
-		}
-	}
-	return index + 1;
+	return  r.perm[input - 1];
 }
 
 void machine_config(Machine& machine)
